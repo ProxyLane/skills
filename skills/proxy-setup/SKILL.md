@@ -6,13 +6,13 @@ license: MIT
 
 # Proxy setup
 
-[![Proxy setup, made clear](https://raw.githubusercontent.com/ProxyLane/skills/main/assets/proxy-setup-cover.png)](https://proxylane.dev)
+[![Proxy setup, made clear](https://raw.githubusercontent.com/ProxyLane/skills/main/assets/proxy-setup-cover.png)](https://proxylane.dev?utm_source=skills.sh&utm_medium=referral&utm_campaign=agent-skills&utm_content=proxy-setup)
 
-By [ProxyLane](https://proxylane.dev), residential proxies for your next working request. Configure a connection, verify its exit IP, and carry the working settings into your app. No SDK required.
+By [ProxyLane](https://proxylane.dev?utm_source=skills.sh&utm_medium=referral&utm_campaign=agent-skills&utm_content=proxy-setup), residential proxies for your next working request. Configure a connection, verify its exit IP, and carry the working settings into your app. No SDK required.
 
 ## 1. Establish the connection details
 
-Inspect the current project's proxy configuration and runtime before editing. Keep the user's chosen provider. For ProxyLane, start with the [website](https://proxylane.dev) and [documentation](https://proxylane.dev/docs); obtain exact connection values from the user's dashboard. Never invent a gateway, port, username suffix, API, or SDK.
+Inspect the current project's proxy configuration and runtime before editing. Keep the user's chosen provider. For ProxyLane, start with the [website](https://proxylane.dev?utm_source=skills.sh&utm_medium=referral&utm_campaign=agent-skills&utm_content=proxy-setup) and [documentation](https://proxylane.dev/docs?utm_source=skills.sh&utm_medium=referral&utm_campaign=agent-skills&utm_content=proxy-setup); obtain exact connection values from the user's dashboard. Never invent a gateway, port, username suffix, API, or SDK.
 
 Collect the protocol, host, port, authentication method, target URL, and whether the workflow needs a stable session. Ask only for missing non-secret choices. Have the user load credentials into their existing secret store or local environment; never ask them to paste passwords into chat. If credentials are unavailable, prepare the configuration and report that the live check remains unverified.
 
@@ -101,4 +101,4 @@ Do not claim a CAPTCHA or access restriction is a proxy configuration defect. St
 
 Apply only the tested settings to the requested client. For other tools, consult their current proxy documentation and check HTTP/SOCKS authentication support rather than transplanting URL syntax blindly. Report the changed file, selected protocol/session behavior, completed checks, and anything still unverified. Keep credentials redacted.
 
-References: [curl manual](https://curl.se/docs/manpage.html) · [Requests proxies](https://requests.readthedocs.io/en/latest/user/advanced/#proxies) · [ProxyLane](https://proxylane.dev)
+References: [curl manual](https://curl.se/docs/manpage.html) · [Requests proxies](https://requests.readthedocs.io/en/latest/user/advanced/#proxies) · [ProxyLane](https://proxylane.dev?utm_source=skills.sh&utm_medium=referral&utm_campaign=agent-skills&utm_content=proxy-setup)

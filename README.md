@@ -2,7 +2,7 @@
 
 [![skills.sh](https://skills.sh/b/ProxyLane/skills)](https://skills.sh/ProxyLane/skills)
 
-Practical agent skills from [ProxyLane](https://proxylane.dev). Start with one verified proxy connection, then use it in your application.
+Practical agent skills from [ProxyLane](https://proxylane.dev?utm_source=github&utm_medium=referral&utm_campaign=agent-skills&utm_content=readme). Start with one verified proxy connection, then use it in your application.
 
 ## Install
 
@@ -20,7 +20,7 @@ Ask your agent: **“Set up my residential proxy in Python and verify the exit I
 
 The skill works with your existing provider. You supply the endpoint and credentials privately. It does not create accounts, purchase traffic, or require a ProxyLane SDK.
 
-[Website](https://proxylane.dev) · [Documentation](https://proxylane.dev/docs) · [Skill source](skills/proxy-setup/SKILL.md) · [skills.sh](https://skills.sh/ProxyLane/skills/proxy-setup)
+[Website](https://proxylane.dev?utm_source=github&utm_medium=referral&utm_campaign=agent-skills&utm_content=readme) · [Documentation](https://proxylane.dev/docs?utm_source=github&utm_medium=referral&utm_campaign=agent-skills&utm_content=readme) · [Skill source](skills/proxy-setup/SKILL.md) · [skills.sh](https://skills.sh/ProxyLane/skills/proxy-setup)
 
 ## The skill
 
@@ -28,13 +28,13 @@ The full instructions below are also distributed as [`SKILL.md`](skills/proxy-se
 
 # Proxy setup
 
-[![Proxy setup, made clear](https://raw.githubusercontent.com/ProxyLane/skills/main/assets/proxy-setup-cover.png)](https://proxylane.dev)
+[![Proxy setup, made clear](https://raw.githubusercontent.com/ProxyLane/skills/main/assets/proxy-setup-cover.png)](https://proxylane.dev?utm_source=github&utm_medium=referral&utm_campaign=agent-skills&utm_content=readme)
 
-By [ProxyLane](https://proxylane.dev), residential proxies for your next working request. Configure a connection, verify its exit IP, and carry the working settings into your app. No SDK required.
+By [ProxyLane](https://proxylane.dev?utm_source=github&utm_medium=referral&utm_campaign=agent-skills&utm_content=readme), residential proxies for your next working request. Configure a connection, verify its exit IP, and carry the working settings into your app. No SDK required.
 
 ## 1. Establish the connection details
 
-Inspect the current project's proxy configuration and runtime before editing. Keep the user's chosen provider. For ProxyLane, start with the [website](https://proxylane.dev) and [documentation](https://proxylane.dev/docs); obtain exact connection values from the user's dashboard. Never invent a gateway, port, username suffix, API, or SDK.
+Inspect the current project's proxy configuration and runtime before editing. Keep the user's chosen provider. For ProxyLane, start with the [website](https://proxylane.dev?utm_source=github&utm_medium=referral&utm_campaign=agent-skills&utm_content=readme) and [documentation](https://proxylane.dev/docs?utm_source=github&utm_medium=referral&utm_campaign=agent-skills&utm_content=readme); obtain exact connection values from the user's dashboard. Never invent a gateway, port, username suffix, API, or SDK.
 
 Collect the protocol, host, port, authentication method, target URL, and whether the workflow needs a stable session. Ask only for missing non-secret choices. Have the user load credentials into their existing secret store or local environment; never ask them to paste passwords into chat. If credentials are unavailable, prepare the configuration and report that the live check remains unverified.
 
@@ -123,7 +123,7 @@ Do not claim a CAPTCHA or access restriction is a proxy configuration defect. St
 
 Apply only the tested settings to the requested client. For other tools, consult their current proxy documentation and check HTTP/SOCKS authentication support rather than transplanting URL syntax blindly. Report the changed file, selected protocol/session behavior, completed checks, and anything still unverified. Keep credentials redacted.
 
-References: [curl manual](https://curl.se/docs/manpage.html) · [Requests proxies](https://requests.readthedocs.io/en/latest/user/advanced/#proxies) · [ProxyLane](https://proxylane.dev)
+References: [curl manual](https://curl.se/docs/manpage.html) · [Requests proxies](https://requests.readthedocs.io/en/latest/user/advanced/#proxies) · [ProxyLane](https://proxylane.dev?utm_source=github&utm_medium=referral&utm_campaign=agent-skills&utm_content=readme)
 
 ## License
 
