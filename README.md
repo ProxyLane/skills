@@ -65,7 +65,7 @@ Use a user-approved HTTPS IP echo endpoint, such as `https://api.ipify.org?forma
 For a shell with a private, already-populated `PROXY_URL`, use curl's environment support so the secret is not expanded into a command-line argument:
 
 ```sh
-HTTPS_PROXY="$PROXY_URL" ALL_PROXY= NO_PROXY= no_proxy= \
+https_proxy="${PROXY_URL:?Load PROXY_URL privately first}" HTTPS_PROXY= ALL_PROXY= all_proxy= NO_PROXY= no_proxy= \
   curl --disable --fail --silent --show-error \
   --connect-timeout 10 --max-time 30 \
   'https://api.ipify.org?format=json'
