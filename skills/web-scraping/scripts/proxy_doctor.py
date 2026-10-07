@@ -33,7 +33,7 @@ import sys
 import time
 import urllib.error
 import urllib.request
-from urllib.parse import urlsplit
+from urllib.parse import unquote, urlsplit
 
 GEO_ENDPOINTS = ["https://ipinfo.io/json", "https://ipwho.is/"]
 
@@ -57,11 +57,28 @@ COUNTRY_LOCALES = {
 def redact(text: str, proxy_url: str) -> str:
     """Remove the proxy's username and password from any message."""
     parts = urlsplit(proxy_url)
-    for secret in (parts.password, parts.username):
-        # Very short values would mangle ordinary words; the URL form below still hides them.
-        if secret and len(secret) >= 4:
+    text = re.sub(r"//[^/@\s]+@", "//***@", text)
+    secrets_to_hide = {value for secret in (parts.password, parts.username) if secret
+                       for value in (secret, unquote(secret))}
+    for secret in sorted(secrets_to_hide, key=len, reverse=True):
+        if len(secret) < 4:
+            text = re.sub(r"(?<!\w)" + re.escape(secret) + r"(?!\w)", "***", text)
+        else:
             text = text.replace(secret, "***")
-    return re.sub(r"//[^/@\s]+@", "//***@", text)
+    return text
+
+
+class ProxyBypassError(RuntimeError):
+    """A system bypass rule would send a proxy check directly."""
+
+
+class RequiredProxyHandler(urllib.request.ProxyHandler):
+    """Fail closed when urllib would bypass the explicit proxy, including redirects."""
+
+    def proxy_open(self, request: urllib.request.Request, proxy: str, scheme: str) -> object:
+        if request.host and urllib.request.proxy_bypass(request.host):
+            raise ProxyBypassError("a system proxy bypass rule matches the destination")
+        return super().proxy_open(request, proxy, scheme)
 
 
 def with_session(proxy_url: str, session_id: str) -> str:
@@ -101,7 +118,7 @@ def fetch_json(url: str, proxy_url: str, timeout: float) -> dict:
             response.raise_for_status()
             return response.json()
 
-    opener = urllib.request.build_opener(urllib.request.ProxyHandler({"http": proxy_url, "https": proxy_url}))
+    opener = urllib.request.build_opener(RequiredProxyHandler({"http": proxy_url, "https": proxy_url}))
     request = urllib.request.Request(url, headers={"User-Agent": "proxy-doctor/1.0", "Accept": "application/json"})
     with opener.open(request, timeout=timeout) as response:
         return json.loads(response.read().decode("utf-8"))
@@ -117,6 +134,8 @@ def probe(proxy_url: str, timeout: float) -> dict:
                 geo["latency_ms"] = round((time.monotonic() - started) * 1000)
                 geo["ok"] = True
                 return geo
+        except ProxyBypassError:
+            last_error = "proxy bypass rule matches geo endpoint; disable it for this check"
         except urllib.error.HTTPError as error:
             last_error = f"HTTP {error.code} from {'proxy' if error.code == 407 else urlsplit(endpoint).hostname}"
             if error.code == 407:
@@ -125,8 +144,8 @@ def probe(proxy_url: str, timeout: float) -> dict:
             if "407" in str(error):
                 last_error = "HTTP 407 from proxy"
                 break
-            last_error = f"{type(error).__name__}: {error}"
-    return {"ok": False, "error": redact(last_error, proxy_url), "latency_ms": round((time.monotonic() - started) * 1000)}
+            last_error = f"{type(error).__name__}: proxy check failed"
+    return {"ok": False, "error": last_error, "latency_ms": round((time.monotonic() - started) * 1000)}
 
 
 def browser_settings(proxy_url: str, timeout: float = 20) -> dict:
@@ -194,8 +213,14 @@ def main(argv: list[str] | None = None) -> int:
     template = args.proxy or os.environ.get("PROXY_URL")
     if not template:
         parser.error("set PROXY_URL or pass --proxy")
-    parts = urlsplit(template)
-    if parts.scheme not in {"http", "https", "socks5", "socks5h"} or not parts.hostname or not parts.port:
+    try:
+        parts = urlsplit(template)
+        valid_proxy = (parts.scheme in {"http", "https", "socks5", "socks5h"}
+                       and parts.hostname and parts.port and parts.path in {"", "/"}
+                       and not parts.query and not parts.fragment)
+    except ValueError:
+        valid_proxy = False
+    if not valid_proxy:
         parser.error("proxy must look like scheme://[user:pass@]host:port with scheme http, https, socks5 or socks5h")
 
     session_id = (args.session or secrets.token_hex(4)) if "{session}" in template else None

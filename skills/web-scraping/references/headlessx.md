@@ -13,20 +13,39 @@ Set `DASHBOARD_INTERNAL_API_KEY` and `CREDENTIAL_ENCRYPTION_KEY` in `.env`. The 
 
 The proxy is global to the instance, not per request. A `proxy` field in a scrape request body is accepted but ignored in 2.1.2. Set it once; this restarts the browser:
 
-```sh
-python3 -c 'import json, os; print(json.dumps({"proxyEnabled": True, "proxyUrl": os.environ["PROXY_URL"], "proxyProtocol": "http"}))' \
-  | curl -X PATCH "$HX/api/config" -H "x-api-key: $HX_KEY" -H 'content-type: application/json' --data @-
+```python
+import json, os
+from urllib.request import Request, urlopen
+
+request = Request(
+    os.environ["HX"].rstrip("/") + "/api/config",
+    data=json.dumps({"proxyEnabled": True, "proxyUrl": os.environ["PROXY_URL"],
+                     "proxyProtocol": "http"}).encode(),
+    headers={"x-api-key": os.environ["HX_KEY"], "content-type": "application/json"},
+    method="PATCH",
+)
+with urlopen(request, timeout=30) as response:
+    print(response.status)
 ```
 
-The JSON goes through stdin, so the proxy password stays out of shell history and process listings.
+Load `HX`, `HX_KEY` and `PROXY_URL` privately into the environment first. These Python examples keep both the API key and proxy password out of process arguments; print only the response status because a configuration response may contain credentials. Use localhost or a trusted HTTPS endpoint for `HX`.
 
 The instance is one browser identity, so give it a sticky session, never a rotating gateway. For many independent pages, rotate by switching the instance to a new session id between batches, or run one instance per session or country.
 
 ## Scrape
 
-```sh
-curl -X POST "$HX/api/operators/website/scrape/content" -H "x-api-key: $HX_KEY" \
-  -H 'content-type: application/json' -d '{"url":"https://example.com","stealth":true}'
+```python
+import json, os
+from urllib.request import Request, urlopen
+
+request = Request(
+    os.environ["HX"].rstrip("/") + "/api/operators/website/scrape/content",
+    data=json.dumps({"url": "https://example.com", "stealth": True}).encode(),
+    headers={"x-api-key": os.environ["HX_KEY"], "content-type": "application/json"},
+    method="POST",
+)
+with urlopen(request, timeout=60) as response:
+    print(response.status)
 ```
 
 Other routes under `/api/operators/website/`: `scrape/html`, `scrape/html-js`, `scrape/screenshot`, `scrape/stream`, `map`, `crawl` (needs Redis). A Cloudflare challenge returns HTTP 403 with a `challenge` object. `stats.statusCode` falls back to 200 when no response was matched, so classify the returned HTML with `scripts/verdict.py` instead of trusting it.

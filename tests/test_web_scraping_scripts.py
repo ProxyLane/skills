@@ -2,6 +2,7 @@
 
 import io
 import json
+import os
 import sys
 import unittest
 from contextlib import redirect_stdout
@@ -100,6 +101,57 @@ def geo(ip, country="US", timezone="America/New_York"):
 
 
 class ProxyDoctorTest(unittest.TestCase):
+    def test_redact_removes_decoded_and_short_credentials(self):
+        for password in ("decoded%2Dsecret", "abc", "x"):
+            with self.subTest(password=password):
+                url = f"http://alice:{password}@gw.example:10000"
+                decoded = proxy_doctor.unquote(password)
+                message = proxy_doctor.redact(f"password={decoded}; via {url}", url)
+                self.assertEqual(message, "password=***; via http://***@gw.example:10000")
+
+    def test_http_check_refuses_environment_proxy_bypass(self):
+        with mock.patch.dict(os.environ, {"NO_PROXY": "*", "no_proxy": "*"}), \
+                mock.patch.object(proxy_doctor.urllib.request.HTTPHandler, "http_open") as direct:
+            with self.assertRaises(proxy_doctor.ProxyBypassError):
+                proxy_doctor.fetch_json("http://geo.example/json", "http://u:p@gw.example:10000", 1)
+        direct.assert_not_called()
+
+    def test_required_proxy_handler_checks_each_destination(self):
+        handler = proxy_doctor.RequiredProxyHandler({"https": "http://u:p@gw.example:10000"})
+        with mock.patch.object(proxy_doctor.urllib.request, "proxy_bypass", return_value=False):
+            request = proxy_doctor.urllib.request.Request("https://geo.example/json")
+            handler.proxy_open(request, "http://u:p@gw.example:10000", "https")
+            self.assertEqual(request._tunnel_host, "geo.example")
+            self.assertEqual(request.host, "gw.example:10000")
+        with mock.patch.object(proxy_doctor.urllib.request, "proxy_bypass", return_value=True):
+            redirected = proxy_doctor.urllib.request.Request("https://redirected.example/json")
+            with self.assertRaises(proxy_doctor.ProxyBypassError):
+                handler.proxy_open(redirected, "http://u:p@gw.example:10000", "https")
+
+    def test_bypass_is_reported_without_a_successful_probe(self):
+        with mock.patch.object(proxy_doctor, "fetch_json", side_effect=proxy_doctor.ProxyBypassError):
+            result = proxy_doctor.probe("http://u:p@gw.example:10000", 1)
+        self.assertFalse(result["ok"])
+        self.assertIn("proxy bypass", result["error"])
+
+    def test_exception_details_are_not_reported(self):
+        for detail in ("decoded-secret", "abc", "session-token=private-value"):
+            with self.subTest(detail=detail), \
+                    mock.patch.object(proxy_doctor, "fetch_json", side_effect=RuntimeError(detail)):
+                result = proxy_doctor.probe("http://alice:decoded%2Dsecret@gw.example:10000", 1)
+                self.assertFalse(result["ok"])
+                self.assertNotIn(detail, result["error"])
+                self.assertEqual(result["error"], "RuntimeError: proxy check failed")
+
+    def test_rejects_proxy_query_and_invalid_port_without_echoing_values(self):
+        for url in ("http://alice:password@gw.example:secret-port",
+                    "http://alice:password@gw.example:10000?token=private-value"):
+            error = io.StringIO()
+            with self.subTest(url=url), self.assertRaises(SystemExit), mock.patch("sys.stderr", error):
+                proxy_doctor.main(["--proxy", url])
+            self.assertNotIn("private-value", error.getvalue())
+            self.assertNotIn("secret-port", error.getvalue())
+
     def test_redact_removes_credentials(self):
         url = "http://alice_c_US_s_abc:s3cret@gw.example:10000"
         message = proxy_doctor.redact(f"failed via {url}; user alice_c_US_s_abc pass s3cret", url)

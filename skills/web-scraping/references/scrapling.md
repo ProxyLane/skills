@@ -3,7 +3,7 @@
 Rungs 1 to 3 in one library: `Fetcher` (curl_cffi with browser TLS), `DynamicFetcher` (Playwright Chromium) and `StealthyFetcher` (Patchright). For the full API, the maintainer publishes the `scrapling-official` skill (`npx skills add D4Vinci/Scrapling --skill scrapling-official`); this page covers proxies and verdicts.
 
 ```sh
-pip install "scrapling[fetchers]>=0.4.15"   # add [ai] for the MCP server
+pip install "scrapling[fetchers]==0.4.15"   # add [ai] for the MCP server
 scrapling install                            # downloads the browsers
 ```
 
@@ -65,4 +65,4 @@ Tools: `make_request`, `bulk_get`, `fetch`, `bulk_fetch`, `stealthy_fetch`, `bul
 
 `from scrapling.spiders import Spider` crawls with `concurrent_requests`, `download_delay`, pause and resume via `crawldir`, and retries blocked statuses (401, 403, 407, 429, 444, 5xx) with a fresh proxy from the session's rotator. Add sessions in `configure_sessions(self, manager)`.
 
-CLI: `scrapling extract get|fetch|stealthy-fetch URL out.md --proxy "$PROXY_URL"`.
+The extract CLI accepts `--proxy`, but expanding a credential-bearing URL there exposes it in process arguments. Use the Python examples above to load `PROXY_URL` privately.
