@@ -1,130 +1,58 @@
 # ProxyLane Skills
 
 [![skills.sh](https://skills.sh/b/ProxyLane/skills)](https://skills.sh/ProxyLane/skills)
+[![tests](https://github.com/ProxyLane/skills/actions/workflows/tests.yml/badge.svg)](https://github.com/ProxyLane/skills/actions/workflows/tests.yml)
 
-Practical agent skills from [ProxyLane](https://proxylane.dev?utm_source=github&utm_medium=referral&utm_campaign=agent-skills&utm_content=readme). Start with one verified proxy connection, then use it in your application.
+Practical agent skills from [ProxyLane](https://proxylane.dev?utm_source=github&utm_medium=referral&utm_campaign=agent-skills&utm_content=readme) for proxies, scraping and browser automation. They work with any proxy provider: you supply the endpoint and credentials privately, and nothing requires a ProxyLane account or SDK.
+
+| Skill | Ask your agent | What it does |
+| --- | --- | --- |
+| [`web-scraping`](skills/web-scraping/SKILL.md) | “Scrape these product pages through my proxy.” “Why does this site return 403?” | Picks the cheapest tool that works (Scrapling, Crawl4AI, Patchright, Camoufox, HeadlessX), wires the proxy, classifies every page and escalates one change at a time |
+| [`proxy-setup`](skills/proxy-setup/SKILL.md) | “Set up my residential proxy in Python and verify the exit IP.” | Configures HTTP or SOCKS5 for curl and Requests, verifies the exit and diagnoses 407s, timeouts and TLS errors |
 
 ## Install
 
 ```sh
+npx skills add ProxyLane/skills --skill web-scraping
 npx skills add ProxyLane/skills --skill proxy-setup
 ```
 
-For Codex, globally:
+For Codex, globally: add `--agent codex -g -y`.
+
+## web-scraping
+
+[![The cheapest tool that works. Climb only when a verdict says so.](assets/web-scraping-ladder.png)](skills/web-scraping/SKILL.md)
+
+The skill keeps a scraper on the cheapest rung that returns the data, because a browser costs more traffic than a request and residential traffic is billed per GB. Two bundled scripts, standard library only:
+
+- [`proxy_doctor.py`](skills/web-scraping/scripts/proxy_doctor.py) checks a proxy before anything depends on it: exit IP, country, timezone, network owner, and whether a sticky session holds. It prints the `timezone_id` and `locale` a browser on that session should use, and never prints credentials.
+- [`verdict.py`](skills/web-scraping/scripts/verdict.py) names every fetched page `ok`, `captcha`, `block`, `empty` or `error`, with the vendor when it recognizes one (Cloudflare, DataDome, PerimeterX, Akamai, Imperva, AWS WAF, Google). A challenge page is never saved as data.
 
 ```sh
-npx skills add ProxyLane/skills --skill proxy-setup --agent codex -g -y
+PROXY_URL='http://USER_s_{session}:PASS@HOST:PORT' python3 skills/web-scraping/scripts/proxy_doctor.py --session job01 --probes 4 --interval 15
+python3 skills/web-scraping/scripts/verdict.py page.html --status 200 --expect "Add to cart"
 ```
 
-Ask your agent: **“Set up my residential proxy in Python and verify the exit IP.”** Or: **“Diagnose this proxy connection error without exposing my credentials.”**
+Per-tool references cover current releases: [Scrapling 0.4.15](skills/web-scraping/references/scrapling.md), [Crawl4AI 0.9.4](skills/web-scraping/references/crawl4ai.md), [Patchright 1.63.0](skills/web-scraping/references/patchright.md), [Camoufox 0.5.8](skills/web-scraping/references/camoufox.md) and [HeadlessX 2.1.2](skills/web-scraping/references/headlessx.md). The Scrapling, Crawl4AI, Patchright and Camoufox examples were run through a residential sticky session on 2026-10-07; the HeadlessX page is checked against its source.
 
-The skill works with your existing provider. You supply the endpoint and credentials privately. It does not create accounts, purchase traffic, or require a ProxyLane SDK.
+The skill keeps clear limits: public data or accounts the user controls, polite rates, and no CAPTCHA-solving services. When two engines and two exits are both challenged, it stops and reports.
 
-[Website](https://proxylane.dev?utm_source=github&utm_medium=referral&utm_campaign=agent-skills&utm_content=readme) · [Documentation](https://proxylane.dev/docs?utm_source=github&utm_medium=referral&utm_campaign=agent-skills&utm_content=readme) · [Skill source](skills/proxy-setup/SKILL.md) · [skills.sh](https://skills.sh/ProxyLane/skills/proxy-setup)
+## proxy-setup
 
-## The skill
+[![Proxy setup, made clear](assets/proxy-setup-cover.png)](skills/proxy-setup/SKILL.md)
 
-The full instructions below are also distributed as [`SKILL.md`](skills/proxy-setup/SKILL.md).
+Start with one verified proxy connection, then use it in your application. The skill collects the connection details without asking for passwords in chat, chooses rotating or sticky behavior, verifies one small request with curl or Python Requests, and walks the first failure to its cause. Full instructions: [`SKILL.md`](skills/proxy-setup/SKILL.md).
 
-# Proxy setup
-
-[![Proxy setup, made clear](https://raw.githubusercontent.com/ProxyLane/skills/main/assets/proxy-setup-cover.png)](https://proxylane.dev?utm_source=github&utm_medium=referral&utm_campaign=agent-skills&utm_content=readme)
-
-By [ProxyLane](https://proxylane.dev?utm_source=github&utm_medium=referral&utm_campaign=agent-skills&utm_content=readme), residential proxies for your next working request. Configure a connection, verify its exit IP, and carry the working settings into your app. No SDK required.
-
-## 1. Establish the connection details
-
-Inspect the current project's proxy configuration and runtime before editing. Keep the user's chosen provider. For ProxyLane, start with the [website](https://proxylane.dev?utm_source=github&utm_medium=referral&utm_campaign=agent-skills&utm_content=readme) and [documentation](https://proxylane.dev/docs?utm_source=github&utm_medium=referral&utm_campaign=agent-skills&utm_content=readme); obtain exact connection values from the user's dashboard. Never invent a gateway, port, username suffix, API, or SDK.
-
-Collect the protocol, host, port, authentication method, target URL, and whether the workflow needs a stable session. Ask only for missing non-secret choices. Have the user load credentials into their existing secret store or local environment; never ask them to paste passwords into chat. If credentials are unavailable, prepare the configuration and report that the live check remains unverified.
-
-Use these environment names in the examples:
-
-- `PROXY_SERVER`: provider-issued scheme, host and port, with no credentials
-- `PROXY_USERNAME` and `PROXY_PASSWORD`: raw credentials, loaded privately
-- `PROXY_URL`: complete proxy URL, with percent-encoded username/password when present
-
-Do not print these values, commit them, enable shell tracing, or include them in screenshots or logs. Preserve existing secret-handling conventions and unrelated settings.
-
-## 2. Choose the route
-
-| Need | Configuration |
-| --- | --- |
-| Independent requests | Provider's rotating mode; rotation cadence depends on its gateway |
-| Multi-step login or checkout test | Sticky session; keep the same provider session identifier across steps |
-| A specific region | Copy the provider's documented targeting configuration |
-| HTTP client with HTTPS targets | HTTP proxy with CONNECT, or HTTPS proxy if explicitly supported |
-| SOCKS with remote DNS | `socks5h://` in curl or Requests; confirm client support |
-
-Sticky sessions can expire or lose their peer. Repeated exit IPs do not prove rotation is broken, and a changed IP alone does not establish residential origin or geographic accuracy. Do not guess country/city/session username syntax.
-
-## 3. Verify one small request
-
-Use a user-approved HTTPS IP echo endpoint, such as `https://api.ipify.org?format=json`. The endpoint sees the exit IP; never send it proxy credentials as URL parameters or destination headers. Begin with one request, a timeout, and no retries. Keep TLS verification enabled.
-
-For a shell with a private, already-populated `PROXY_URL`, use curl's environment support so the secret is not expanded into a command-line argument:
+## Development
 
 ```sh
-https_proxy="${PROXY_URL:?Load PROXY_URL privately first}" HTTPS_PROXY= ALL_PROXY= all_proxy= NO_PROXY= no_proxy= \
-  curl --disable --fail --silent --show-error \
-  --connect-timeout 10 --max-time 30 \
-  'https://api.ipify.org?format=json'
+python3 -m unittest discover tests
 ```
 
-`--disable` must be curl's first option; it ignores local curl configuration. The empty bypass variables prevent an inherited `NO_PROXY` rule from skipping this HTTPS test. Avoid verbose traces and sanitize error text before sharing it. Use the provider's actual scheme; an HTTPS target does not imply an HTTPS proxy gateway.
+Tests run offline against fixtures. Issues and pull requests are welcome; a failing page with the tool version, the verdict and steps to reproduce helps most.
 
-For Python with Requests already installed, construct the URL from separately loaded credentials:
-
-```python
-import os
-from urllib.parse import quote, urlsplit, urlunsplit
-import requests
-
-server = urlsplit(os.environ["PROXY_SERVER"])
-assert server.scheme in {"http", "https", "socks5", "socks5h"}
-assert server.hostname and server.port and not server.username
-assert server.path in {"", "/"} and not server.query and not server.fragment
-user = quote(os.environ["PROXY_USERNAME"], safe="")
-password = quote(os.environ["PROXY_PASSWORD"], safe="")
-proxy = urlunsplit((server.scheme, f"{user}:{password}@{server.netloc}", "", "", ""))
-
-with requests.Session() as client:
-    client.trust_env = False
-    try:
-        response = client.get(
-            "https://api.ipify.org?format=json",
-            proxies={"http": proxy, "https": proxy},
-            timeout=(10, 30),
-        )
-        response.raise_for_status()
-        print(response.json()["ip"])
-    except requests.RequestException as error:
-        raise SystemExit(f"Proxy check failed: {type(error).__name__}") from None
-```
-
-For IP-allowlist authentication, use `PROXY_SERVER` directly as `proxy` and omit username/password handling. SOCKS requires Requests' optional `requests[socks]` dependency; use the project's package manager if installation is authorized. `trust_env=False` also disables environment-provided CA settings; supply an approved CA bundle explicitly if the environment needs one.
-
-Record status, exit IP and test time without credentials. Compare against a known direct egress IP only when a direct connection is acceptable. A successful echo response proves that request, not access to every target. Then test one small request to the intended authorized target. Do not silently fall back to a direct connection.
-
-## 4. Diagnose the first failure
-
-| Observation | Next check |
-| --- | --- |
-| 407 or proxy authentication failure | Credentials, auth method, allowlisted client IP, account status |
-| Cannot resolve gateway / connection refused | Exact host, port, protocol, local DNS and firewall |
-| Timeout | Gateway reachability, target availability, provider session; avoid retry storms |
-| TLS certificate error | System clock, trust store, gateway scheme; never disable verification |
-| 403, 429 or challenge page | Determine whether proxy or destination returned it; respect target rules and rate limits |
-| Unexpected exit IP | Bypass rules, client config, sticky-session lifetime and provider targeting |
-
-Do not claim a CAPTCHA or access restriction is a proxy configuration defect. Stop at an unresolved authentication or access boundary and state the missing fact.
-
-## 5. Deliver the working configuration
-
-Apply only the tested settings to the requested client. For other tools, consult their current proxy documentation and check HTTP/SOCKS authentication support rather than transplanting URL syntax blindly. Report the changed file, selected protocol/session behavior, completed checks, and anything still unverified. Keep credentials redacted.
-
-References: [curl manual](https://curl.se/docs/manpage.html) · [Requests proxies](https://requests.readthedocs.io/en/latest/user/advanced/#proxies) · [ProxyLane](https://proxylane.dev?utm_source=github&utm_medium=referral&utm_campaign=agent-skills&utm_content=readme)
+[Website](https://proxylane.dev?utm_source=github&utm_medium=referral&utm_campaign=agent-skills&utm_content=readme) · [Documentation](https://docs.proxylane.dev?utm_source=github&utm_medium=referral&utm_campaign=agent-skills&utm_content=readme) · [MCP server](https://proxylane.dev/mcp-access?utm_source=github&utm_medium=referral&utm_campaign=agent-skills&utm_content=readme) · [skills.sh](https://skills.sh/ProxyLane/skills)
 
 ## License
 
-Skill instructions and examples: [MIT](LICENSE). ProxyLane branding remains the property of ProxyLane.
+Skill instructions, scripts and examples: [MIT](LICENSE). ProxyLane branding remains the property of ProxyLane.
