@@ -1,0 +1,9 @@
+{"prompt": "Scrape the product titles and prices from this store through my proxy", "expect": "web-scraping"}
+{"prompt": "This site returns 403 to my requests script, what should I try?", "expect": "web-scraping"}
+{"prompt": "Set up Camoufox with my residential proxy and match the timezone", "expect": "web-scraping"}
+{"prompt": "Which is better for this site, Scrapling or Patchright?", "expect": "web-scraping"}
+{"prompt": "My crawler saves Cloudflare challenge pages instead of data", "expect": "web-scraping"}
+{"prompt": "Add my proxy to Crawl4AI and get markdown of these pages", "expect": "web-scraping"}
+{"prompt": "Configure a SOCKS5 proxy for curl and check my exit IP", "expect": "proxy-setup"}
+{"prompt": "I get 407 Proxy Authentication Required from requests", "expect": "proxy-setup"}
+{"prompt": "Write a unit test for my Django view", "expect": null}
