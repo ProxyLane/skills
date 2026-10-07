@@ -49,11 +49,11 @@ It prints the exit IP, country, timezone and network owner per probe without cre
 | --- | --- | --- | --- |
 | 1 | Scrapling `Fetcher` / `FetcherSession` (curl_cffi, browser TLS) | HTML or JSON is in the server response | lowest; tens of KB |
 | 2 | Crawl4AI or Scrapling `DynamicFetcher` | content needs JavaScript; you want clean Markdown for an LLM | browser; block images and media |
-
-Every browser rung (2 to 4) runs on a sticky session with `timezone_id` and `locale` from that session's exit.
 | 3 | Scrapling `StealthySession` or Patchright persistent context | rung 2 is challenged; logged-in or multi-step flows; full control of Chrome | real Chrome, headed |
 | 4 | Camoufox | Chromium is fingerprinted; you need a consistent Firefox identity with geo from the exit | Firefox, heavier |
 | 5 | HeadlessX (self-hosted API and MCP) | a team or agent needs scraping as a service behind one proxy | runs Postgres, Redis, API |
+
+Every browser rung (2 to 4) runs on a sticky session with `timezone_id` and `locale` from that session's exit.
 
 Check rung 1 first even for "JavaScript sites": open the page source or the network tab; many sites ship the data as JSON in the HTML or a public API call. Read the matching reference only for the rung you use:
 

@@ -3,7 +3,7 @@
 Rung 2 when the output is Markdown for an LLM or a RAG index. It detects anti-bot pages itself and can walk a list of proxies.
 
 ```sh
-pip install -U crawl4ai
+pip install "crawl4ai==0.9.4"
 crawl4ai-setup && crawl4ai-doctor
 ```
 
@@ -20,7 +20,7 @@ from verdict import classify
 proxy_url = os.environ["PROXY_URL"].replace("{session}", "job01")
 geo = browser_settings(proxy_url)        # timezone and locale of this session's exit
 run = CrawlerRunConfig(proxy_config=ProxyConfig.from_string(proxy_url), cache_mode=CacheMode.BYPASS,
-                       max_retries=1, timezone_id=geo["timezone_id"], locale=geo["locale"])
+                       max_retries=0, timezone_id=geo["timezone_id"], locale=geo["locale"])
 
 async def main():
     async with AsyncWebCrawler(config=BrowserConfig(headless=True, enable_stealth=True)) as crawler:
