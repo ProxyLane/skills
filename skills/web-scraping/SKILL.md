@@ -9,7 +9,7 @@ metadata:
 
 # Web scraping through proxies
 
-[![The cheapest tool that works. Climb only when a verdict says so.](https://raw.githubusercontent.com/ProxyLane/skills/main/assets/web-scraping-ladder.png)](https://proxylane.dev?utm_source=skills.sh&utm_medium=referral&utm_campaign=agent-skills&utm_content=web-scraping)
+[![The cheapest tool that works, climb only when a verdict says so](https://raw.githubusercontent.com/ProxyLane/skills/main/assets/web-scraping-ladder.png)](https://proxylane.dev?utm_source=skills.sh&utm_medium=referral&utm_campaign=agent-skills&utm_content=web-scraping)
 
 By [ProxyLane](https://proxylane.dev?utm_source=skills.sh&utm_medium=referral&utm_campaign=agent-skills&utm_content=web-scraping). Works with any HTTP proxy provider.
 
