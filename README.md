@@ -21,7 +21,7 @@ For Codex, globally: add `--agent codex -g -y`.
 
 ## web-scraping
 
-[![The cheapest tool that works. Climb only when a verdict says so.](assets/web-scraping-ladder.png)](skills/web-scraping/SKILL.md)
+[![The cheapest tool that works, climb only when a verdict says so](assets/web-scraping-ladder.png)](skills/web-scraping/SKILL.md)
 
 The skill keeps a scraper on the cheapest rung that returns the data, because a browser costs more traffic than a request and residential traffic is billed per GB. Two bundled scripts, standard library only:
 
