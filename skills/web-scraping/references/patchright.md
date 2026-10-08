@@ -3,8 +3,8 @@
 A drop-in Playwright replacement for Chromium that removes the automation leaks most detectors check (`Runtime.enable`, automation flags). It does not spoof fingerprints, does not handle WebRTC, and is not designed for headless use.
 
 ```sh
-pip install patchright && patchright install chrome     # Python 3.10+
-npm i patchright && npx patchright install chrome        # Node 20+
+pip install "patchright==1.63.0" && patchright install chrome     # Python 3.10+
+npm i patchright@1.63.0 && npx patchright install chrome          # Node 20+
 ```
 
 ## Recommended launch with a sticky proxy

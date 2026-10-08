@@ -3,7 +3,7 @@
 Firefox with fingerprint injection at the C++ level. Use it when Chromium-based tools are fingerprinted or when an identity must stay consistent with its exit location.
 
 ```sh
-pip install -U "camoufox[geoip]"     # Python 3.10+
+pip install "camoufox[geoip]==0.5.8"     # Python 3.10+
 python -m camoufox fetch             # set GITHUB_TOKEN to avoid GitHub rate limits
 ```
 

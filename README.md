@@ -23,17 +23,20 @@ For Codex, globally: add `--agent codex -g -y`.
 
 [![The cheapest tool that works, climb only when a verdict says so](assets/web-scraping-ladder.png)](skills/web-scraping/SKILL.md)
 
-The skill keeps a scraper on the cheapest rung that returns the data, because a browser costs more traffic than a request and residential traffic is billed per GB. Two bundled scripts, standard library only:
+The skill keeps a scraper on the cheapest rung that returns the data, because a browser costs more traffic than a request and residential traffic is billed per GB. Two bundled scripts use the standard library for HTTP(S); SOCKS checks need the optional `requests[socks]` package:
 
 - [`proxy_doctor.py`](skills/web-scraping/scripts/proxy_doctor.py) checks a proxy before anything depends on it: exit IP, country, timezone, network owner, and whether a sticky session holds. It prints the `timezone_id` and `locale` a browser on that session should use, and never prints credentials.
 - [`verdict.py`](skills/web-scraping/scripts/verdict.py) names every fetched page `ok`, `captcha`, `block`, `empty` or `error`, with the vendor when it recognizes one (Cloudflare, DataDome, PerimeterX, Akamai, Imperva, AWS WAF, Google). A challenge page is never saved as data.
 
 ```sh
-PROXY_URL='http://USER_s_{session}:PASS@HOST:PORT' python3 skills/web-scraping/scripts/proxy_doctor.py --session job01 --probes 4 --interval 15
+# Load PROXY_URL privately with the provider's documented session template first
+python3 skills/web-scraping/scripts/proxy_doctor.py --session job01 --probes 4 --interval 15
 python3 skills/web-scraping/scripts/verdict.py page.html --status 200 --expect "Add to cart"
 ```
 
 Per-tool references cover current releases: [Scrapling 0.4.15](skills/web-scraping/references/scrapling.md), [Crawl4AI 0.9.4](skills/web-scraping/references/crawl4ai.md), [Patchright 1.63.0](skills/web-scraping/references/patchright.md), [Camoufox 0.5.8](skills/web-scraping/references/camoufox.md) and [HeadlessX 2.1.2](skills/web-scraping/references/headlessx.md). The Scrapling, Crawl4AI, Patchright and Camoufox examples were run through a residential sticky session on 2026-10-07; the HeadlessX page is checked against its source.
+
+The doctor refuses system proxy bypass rules that would send a probe directly. Geo endpoints (`ipinfo.io`, with `ipwho.is` as fallback) see the exit IP; a geo response estimates location and network owner, and a few matching probes do not guarantee future sticky stability.
 
 The skill keeps clear limits: public data or accounts the user controls, polite rates, and no CAPTCHA-solving services. When two engines and two exits are both challenged, it stops and reports.
 
