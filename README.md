@@ -9,12 +9,14 @@ Practical agent skills from [ProxyLane](https://proxylane.dev?utm_source=github&
 | --- | --- | --- |
 | [`web-scraping`](skills/web-scraping/SKILL.md) | “Scrape these product pages through my proxy.” “Why does this site return 403?” | Picks the cheapest tool that works (Scrapling, Crawl4AI, Patchright, Camoufox, HeadlessX), wires the proxy, classifies every page and escalates one change at a time |
 | [`proxy-setup`](skills/proxy-setup/SKILL.md) | “Set up my residential proxy in Python and verify the exit IP.” | Configures HTTP or SOCKS5 for curl and Requests, verifies the exit and diagnoses 407s, timeouts and TLS errors |
+| [`proxylane-reseller`](skills/proxylane-reseller/SKILL.md) | “Create a login for my new client with 5 GB.” “Who is running out of traffic?” | Runs a ProxyLane reseller account through its API: wholesale traffic, a sub-account per client, moving GB, proxy lists and usage reports |
 
 ## Install
 
 ```sh
 npx skills add ProxyLane/skills --skill web-scraping
 npx skills add ProxyLane/skills --skill proxy-setup
+npx skills add ProxyLane/skills --skill proxylane-reseller
 ```
 
 For Codex, globally: add `--agent codex -g -y`.
@@ -45,6 +47,10 @@ The skill keeps clear limits: public data or accounts the user controls, polite 
 [![Proxy setup, made clear](assets/proxy-setup-cover.png)](skills/proxy-setup/SKILL.md)
 
 Start with one verified proxy connection, then use it in your application. The skill collects the connection details without asking for passwords in chat, chooses rotating or sticky behavior, verifies one small request with curl or Python Requests, and walks the first failure to its cause. Full instructions: [`SKILL.md`](skills/proxy-setup/SKILL.md).
+
+## proxylane-reseller
+
+For ProxyLane resellers. Create a key in the dashboard under **Reseller panel** → **Set up API**, load it as `PROXYLANE_RESELLER_KEY`, and the agent can buy wholesale traffic, open a sub-account for each client, move GB between the pool and clients, pause or delete clients, generate proxy lists and report usage. The bundled [`reseller.py`](skills/proxylane-reseller/scripts/reseller.py) uses the standard library, sends idempotency keys for every purchase or traffic move, and never prints the API key. The agent asks before it spends the balance or deletes a client. Full instructions: [`SKILL.md`](skills/proxylane-reseller/SKILL.md).
 
 ## Development
 
