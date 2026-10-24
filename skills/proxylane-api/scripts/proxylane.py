@@ -1,17 +1,17 @@
 #!/usr/bin/env python3
-"""ProxyLane Reseller API client for agents. Standard library only.
+"""ProxyLane API client for agents. Standard library only.
 
-The API key is read from PROXYLANE_RESELLER_KEY and is never printed.
+The API key is read from PROXYLANE_API_KEY (PROXYLANE_RESELLER_KEY still works) and is never printed.
 Writes that buy or move traffic send an Idempotency-Key; pass --key to retry
 the same action safely after a lost response.
 
 Examples:
-  python3 reseller.py account
-  python3 reseller.py buy 50
-  python3 reseller.py create "Acme" --external-id crm-1042 --gb 5
-  python3 reseller.py allocate SUBACCOUNT_ID 10
-  python3 reseller.py reclaim SUBACCOUNT_ID          # everything unused
-  python3 reseller.py proxies SUBACCOUNT_ID --country US --session sticky --count 10
+  python3 proxylane.py account
+  python3 proxylane.py buy 50
+  python3 proxylane.py create "Office Kyiv" --external-id office-1 --gb 100
+  python3 proxylane.py allocate SUBUSER_ID 10
+  python3 proxylane.py reclaim SUBUSER_ID            # everything unused
+  python3 proxylane.py proxies SUBUSER_ID --country US --count 10
 """
 
 import argparse
@@ -23,7 +23,7 @@ import urllib.parse
 import urllib.request
 import uuid
 
-DEFAULT_BASE_URL = "https://proxylane.dev/api/reseller/v1"
+DEFAULT_BASE_URL = "https://proxylane.dev/api/v1"
 KEYED = {"buy", "create", "allocate", "reclaim"}
 
 
@@ -34,13 +34,13 @@ class ApiError(Exception):
 
 
 def base_url():
-    return os.environ.get("PROXYLANE_RESELLER_API", DEFAULT_BASE_URL).rstrip("/")
+    return (os.environ.get("PROXYLANE_API") or os.environ.get("PROXYLANE_RESELLER_API") or DEFAULT_BASE_URL).rstrip("/")
 
 
 def api_key():
-    key = os.environ.get("PROXYLANE_RESELLER_KEY", "").strip()
+    key = (os.environ.get("PROXYLANE_API_KEY") or os.environ.get("PROXYLANE_RESELLER_KEY") or "").strip()
     if not key.startswith("plr_"):
-        raise SystemExit("Set PROXYLANE_RESELLER_KEY to a reseller key from the ProxyLane reseller panel (it starts with plr_).")
+        raise SystemExit("Set PROXYLANE_API_KEY to an API key from the ProxyLane dashboard, Settings → API keys (it starts with plr_).")
     return key
 
 
@@ -48,7 +48,7 @@ def call(method, path, body=None, query=None, idempotency_key=None, opener=urlli
     url = base_url() + path
     if query:
         url += "?" + urllib.parse.urlencode({k: v for k, v in query.items() if v is not None})
-    headers = {"Authorization": "Bearer " + api_key(), "Accept": "application/json", "User-Agent": "proxylane-reseller-skill/1.0"}
+    headers = {"Authorization": "Bearer " + api_key(), "Accept": "application/json", "User-Agent": "proxylane-api-skill/1.0"}
     data = None
     if body is not None:
         headers["Content-Type"] = "application/json"
@@ -69,47 +69,47 @@ def call(method, path, body=None, query=None, idempotency_key=None, opener=urlli
 
 
 def parser():
-    p = argparse.ArgumentParser(description="ProxyLane Reseller API")
+    p = argparse.ArgumentParser(description="ProxyLane API")
     p.add_argument("--key", help="Idempotency-Key to reuse when retrying a buy, create, allocate or reclaim")
     sub = p.add_subparsers(dest="command", required=True)
-    sub.add_parser("account", help="Pool, USD balance, price and totals")
-    s = sub.add_parser("buy", help="Buy whole GB for the pool from the USD balance")
+    sub.add_parser("account", help="Traffic balance, USD balance, prices and sub-user totals")
+    s = sub.add_parser("buy", help="Buy whole GB of residential traffic from the USD balance")
     s.add_argument("gb", type=int)
-    s = sub.add_parser("history", help="Pool purchases and traffic moves")
+    s = sub.add_parser("history", help="Purchases and traffic moves between the balance and sub-users")
     s.add_argument("--limit", type=int, default=50)
-    s = sub.add_parser("list", help="List sub-accounts")
+    s = sub.add_parser("list", help="List sub-users")
     s.add_argument("--search")
     s.add_argument("--status", choices=["active", "suspended", "deleted", "all"])
     s.add_argument("--page", type=int)
-    s = sub.add_parser("create", help="Create a sub-account for one client")
+    s = sub.add_parser("create", help="Create a sub-user with its own login and GB limit")
     s.add_argument("name")
     s.add_argument("--external-id")
     s.add_argument("--gb", type=float, default=0)
-    for name, text in (("get", "Show one sub-account"), ("suspend", "Pause the login"), ("resume", "Resume the login"), ("delete", "Delete and return unused traffic")):
+    for name, text in (("get", "Show one sub-user"), ("suspend", "Pause the login"), ("resume", "Resume the login"), ("delete", "Delete and return unused traffic")):
         sub.add_parser(name, help=text).add_argument("id")
     s = sub.add_parser("rename", help="Change name or external ID")
     s.add_argument("id")
     s.add_argument("--name")
     s.add_argument("--external-id")
-    s = sub.add_parser("allocate", help="Move GB from the pool to a sub-account")
+    s = sub.add_parser("allocate", help="Move GB from the balance to a sub-user")
     s.add_argument("id")
     s.add_argument("gb", type=float)
-    s = sub.add_parser("reclaim", help="Return unused GB to the pool; omit gb to return all")
+    s = sub.add_parser("reclaim", help="Return unused GB to the balance; omit gb to return all")
     s.add_argument("id")
     s.add_argument("gb", type=float, nargs="?")
-    s = sub.add_parser("usage", help="Client traffic per day or hour")
+    s = sub.add_parser("usage", help="Sub-user traffic per day or hour")
     s.add_argument("id")
     s.add_argument("--hourly", action="store_true")
     s.add_argument("--periods", type=int)
-    s = sub.add_parser("proxies", help="Generate connection strings for a sub-account")
+    s = sub.add_parser("proxies", help="Generate connection strings for a sub-user")
     s.add_argument("id")
     s.add_argument("--country")
     s.add_argument("--region")
     s.add_argument("--city")
     s.add_argument("--isp")
-    s.add_argument("--session", choices=["rotating", "sticky", "timed"], default="rotating")
+    s.add_argument("--session", choices=["rotating", "sticky", "timed"], default="sticky")
     s.add_argument("--ttl", type=int)
-    s.add_argument("--protocol", choices=["http", "socks5"], default="http")
+    s.add_argument("--protocol", choices=["http", "socks5"], default="socks5")
     s.add_argument("--gateway", choices=["europe", "america", "asia"], default="europe")
     s.add_argument("--count", type=int, default=1)
     s.add_argument("--format", choices=["url", "host_first", "user_first"], default="url")
