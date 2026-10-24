@@ -68,7 +68,7 @@ Find sub-users by your own ID with `list --search`; `external_id` is unique per 
 
 ## 5. Common jobs
 
-**Split traffic between offices or teammates.** `account` → if the balance is short, propose `buy` with the total and wait for yes → `create` one sub-user per office with its GB → hand each office its `proxies` file.
+**Split traffic between offices or teammates.** `account` → if the balance is short, propose `buy` with the total and wait for yes → `create` one sub-user per office with its GB → hand each office its `proxies` file. The same sub-users appear in the dashboard under **Residential Proxies** → **Team**, where the user can see each one's traffic, top it up, pause it or copy its proxies, so point them there to check the result.
 
 **New client.** Same as above with the client's name and CRM ID as `external_id`. A brand-new login can take a few hours to work on every gateway; `login_warming_until` shows until when.
 
