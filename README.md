@@ -9,14 +9,14 @@ Practical agent skills from [ProxyLane](https://proxylane.dev?utm_source=github&
 | --- | --- | --- |
 | [`web-scraping`](skills/web-scraping/SKILL.md) | “Scrape these product pages through my proxy.” “Why does this site return 403?” | Picks the cheapest tool that works (Scrapling, Crawl4AI, Patchright, Camoufox, HeadlessX), wires the proxy, classifies every page and escalates one change at a time |
 | [`proxy-setup`](skills/proxy-setup/SKILL.md) | “Set up my residential proxy in Python and verify the exit IP.” | Configures HTTP or SOCKS5 for curl and Requests, verifies the exit and diagnoses 407s, timeouts and TLS errors |
-| [`proxylane-reseller`](skills/proxylane-reseller/SKILL.md) | “Create a login for my new client with 5 GB.” “Who is running out of traffic?” | Runs a ProxyLane reseller account through its API: wholesale traffic, a sub-account per client, moving GB, proxy lists and usage reports |
+| [`proxylane-api`](skills/proxylane-api/SKILL.md) | “Give each of my 5 offices 100 GB.” “Who is running out of traffic?” | Runs a ProxyLane account through its API: traffic balance, a sub-user per office, teammate or client, moving GB, proxy lists and usage reports |
 
 ## Install
 
 ```sh
 npx skills add ProxyLane/skills --skill web-scraping
 npx skills add ProxyLane/skills --skill proxy-setup
-npx skills add ProxyLane/skills --skill proxylane-reseller
+npx skills add ProxyLane/skills --skill proxylane-api
 ```
 
 For Codex, globally: add `--agent codex -g -y`.
@@ -48,9 +48,11 @@ The skill keeps clear limits: public data or accounts the user controls, polite 
 
 Start with one verified proxy connection, then use it in your application. The skill collects the connection details without asking for passwords in chat, chooses rotating or sticky behavior, verifies one small request with curl or Python Requests, and walks the first failure to its cause. Full instructions: [`SKILL.md`](skills/proxy-setup/SKILL.md).
 
-## proxylane-reseller
+## proxylane-api
 
-For ProxyLane resellers. Create a key in the dashboard under **Reseller panel** → **Set up API**, load it as `PROXYLANE_RESELLER_KEY`, and the agent can buy wholesale traffic, open a sub-account for each client, move GB between the pool and clients, pause or delete clients, generate proxy lists and report usage. The bundled [`reseller.py`](skills/proxylane-reseller/scripts/reseller.py) uses the standard library, sends idempotency keys for every purchase or traffic move, and never prints the API key. The agent asks before it spends the balance or deletes a client. Full instructions: [`SKILL.md`](skills/proxylane-reseller/SKILL.md).
+For any ProxyLane account. Create a key in the dashboard under **Settings** → **API keys** (or **API** in the sidebar), load it as `PROXYLANE_API_KEY`, and the agent can check and buy traffic, open a sub-user for each office, teammate or client, move GB between the balance and sub-users, pause or delete sub-users, generate proxy lists and report usage. The bundled [`proxylane.py`](skills/proxylane-api/scripts/proxylane.py) uses the standard library, sends idempotency keys for every purchase or traffic move, and never prints the API key. The agent asks before it spends the balance or deletes a sub-user. Full instructions: [`SKILL.md`](skills/proxylane-api/SKILL.md).
+
+The former `proxylane-reseller` skill now points here; its `PROXYLANE_RESELLER_KEY` still works.
 
 ## Development
 
